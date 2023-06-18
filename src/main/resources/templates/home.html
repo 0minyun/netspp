@@ -32,9 +32,6 @@
         <div>
           <!--trailer video-->
           <video class="hero-background-image p-b-40" id="hero-video" th:poster="${randomVideo.videoImg.imgUrl}">
-            <!--                           th:poster="@{/images/main_img/hot1.jpg}">-->
-
-            >
             <source th:src="${randomVideo.videoFile.fileUrl}"
                     type="video/mp4">
           </video>
@@ -402,7 +399,6 @@
 
 
       <!--hollywood new release -->
-
       <!--                세션 기준으로 장르별로 나눈다 여기까지 할리우드? 임의로 슬리러 장르를 for each문 -->
       <script th:inline="javascript">
 

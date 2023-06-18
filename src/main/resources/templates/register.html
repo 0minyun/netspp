@@ -10,10 +10,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" th:href="@{/assets/css/global.css}" />
     <link rel="stylesheet" th:href="@{/assets/css/landing-pages.css}" />
+    <script th:src="@{/assets/lib/jquery 3.7.0.js}"></script>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 </head>
 
 <body>
-<!-- index page block start | main landing page home | -->
 <main style="padding: 0px 10px;">
     <header class="d-flex space-between middle-align">
         <a href="/">
@@ -21,7 +23,6 @@
         </a>
     </header>
     <section id="login-form-section">
-        <!--Login form start-->
 
         <div class="loginContainer d-flex direction-column">
             <h2 class="formtitle">
@@ -30,104 +31,68 @@
             <form id="loginForm" action="/members/new" th:object="${memberFormDto}"  class="d-flex direction-column" method="post" name="loginForm" onsubmit="return checkPasswordMatch()">
 
 
-                <input type="text" id="name" th:field="*{name}" class="from-control name" placeholder="이름을 입력해주세요">
+                <input type="text" id="name" name="name" class="from-control name" placeholder="이름을 입력해주세요">
                 <p id="errorName" style="display: none;" th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="fieldError">잘못된 이름입니다.</p>
 
-                <input type="email" id="email"  th:field="*{email}" class="form-control email" placeholder="이메일을 입력해주세요">
+                <input type="email" id="email"  name="email" class="form-control email" placeholder="이메일을 입력해주세요">
                 <p id="errorEmail" style="display: none;" th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="fieldError">잘못된 이메일주소 입니다..</p>
 
-                <input type="text" id="phoneNumber"  th:field="*{phoneNumber}" class="form-control phoneNumber" placeholder="전화번호를 - 없이 입력해주세요">
+                <input type="text" id="phoneNumber"  name="phoneNumber" class="form-control phoneNumber" placeholder="전화번호를 - 없이 입력해주세요">
 
-                <input type="password" id="password" th:field="*{password}" class="form-control password" placeholder="비밀번호를 입력해주세요">
+                <input type="password" id="password" name="password" class="form-control password" placeholder="비밀번호를 입력해주세요">
                 <input type="password" id="passwordcheck" class="form-control password" placeholder="비밀번호를 다시 입력해주세요">
                 <label id="passwordMatchLabel" for="passwordcheck"></label>
                 <p th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="fieldError">잘못된 비밀번호입니다.</p>
 
-                <button type="submit" id="signInButton" class="button submitButton" disabled>회원가입</button>
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button type="button" id="signInButton" class="button submitButton">회원가입</button>
 
                 <p class="signUpText para">
                     계정이 있으신가요?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="signUp"><a th:href="@{/members/login}">로그인 하러가기</a></span>
                 </p>
-<!--                <p class="bottomMessage para" style="font-size: 13px;">-->
-<!--                    이 페이지는 Google reCAPTCHA의 보호를 받아 사용자가 로봇이 아님을 확인합니다. <span style="color:royalblue; font-size: 15px;"> 자세히알아보기.</span>-->
-<!--                </p>-->
             </form>
         </div>
 
-        <!--Login form End-->
     </section>
 </main>
 
 <script>
+$('.submitButton').click(function(event) {
+   event.stopPropagation(); //기본내장된기능을 취소한다.
+   var $clickElement = $(this);
+   var memberinfo = $("#loginForm").serializeArray();
+   var header = $("meta[name='_csrf_header']").attr('content');
+    var token = $("meta[name='_csrf']").attr('content');
+      var obj;
+      if(memberinfo){
+        obj = {};
+        jQuery.each(memberinfo, function() {
+        obj[this.name] = this.value;
+        });
+        };
+    alert("dddd");
+   $.ajax({
+       url: "/members/new",
+       type: "POST",
+       beforeSend: function(xhr) {
+               xhr.setRequestHeader(header, token);
+           },
+       contentType: 'application/json; charset=utf-8',
+       data: JSON.stringify( obj ),
+       success: function(response) {
+               console.log(response);
+               if(response.code === 200){
+               alert(response.message);
+               location.href = '/members/login';
+               }
+<!--               location.href = '/login';-->
+       },
+       error: function(xhr, status, error) {
+           console.error('Failed to save member:', error);
+       }
 
 
-document.addEventListener("DOMContentLoaded", function(){
-    var nameElement = document.getElementById('name');
-    var emailElement = document.getElementById('email');
-    var phoneNumberElement = document.getElementById('phoneNumber');
-    var passwordElement = document.getElementById('password');
-    var signInButton = document.getElementById('signInButton');
-    var errorEmailElement = document.getElementById('errorEmail');
-    var errorNameElement = document.getElementById('errorName');
-
-    nameElement.addEventListener('input', validateForm);
-    emailElement.addEventListener('input', validateForm);
-    phoneNumberElement.addEventListener('input', validateForm);
-    passwordElement.addEventListener('input', validateForm);
-
-    signInButton.disabled = true;
-
-    function validateForm() {
-        var name = nameElement.value;
-        var email = emailElement.value;
-        var phoneNumber = phoneNumberElement.value;
-        var password = passwordElement.value;
-        var isValidEmail = validateEmail(email);
-
-        if (name !== "" && email !== "" && phoneNumber !== "" && password !== "" && isValidEmail) {
-            signInButton.disabled = false;
-            errorEmailElement.style.display = "none";
-            errorNameElement.style.display = "none";
-        } else {
-            signInButton.disabled = true;
-        }
-    }
-
-    function validateEmail(email) {
-        var re = /\S+@\S+\.\S+/;
-        return re.test(email);
-    }
-
-    var passwordCheckElement = document.getElementById("passwordcheck");
-    var passwordMatchLabelElement = document.getElementById("passwordMatchLabel");
-
-    passwordElement.addEventListener("input", checkPasswordMatch);
-    passwordCheckElement.addEventListener("input", checkPasswordMatch);
-
-    function checkPasswordMatch() {
-        var password = passwordElement.value;
-        var passwordCheck = passwordCheckElement.value;
-
-        if (password === passwordCheck || password === '' || passwordCheck === '') {
-            passwordMatchLabelElement.textContent = "비밀번호가 일치합니다.";
-            passwordMatchLabelElement.style.color = "green";
-        } else {
-            passwordMatchLabelElement.textContent = "비밀번호가 일치하지 않습니다.";
-            passwordMatchLabelElement.style.color = "red";
-        }
-    }
-
-    signInButton.addEventListener("click", function(e) {
-        if (passwordElement.value !== passwordCheckElement.value) {
-            e.preventDefault();
-            passwordCheckElement.focus();
-        }
-    });
+   });
 });
-
-
-
 </script>
 
 </body>
