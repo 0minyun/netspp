@@ -60,9 +60,8 @@ public class MemberController {
             model.addAttribute("errorMessage",e.getMessage());
             ResponseEntity.badRequest().body(e.getMessage());
         }
-//        return "redirect:/members/login";
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Like saved successfully");
+        response.put("message", "회원가입이 성공하였습니다 로그인 해주세요");
         response.put("code", 200);
         return ResponseEntity.ok(response);
     }

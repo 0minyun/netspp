@@ -45,7 +45,6 @@
                 <p th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="fieldError">잘못된 비밀번호입니다.</p>
 
                 <button type="button" id="signInButton" class="button submitButton">회원가입</button>
-
                 <p class="signUpText para">
                     계정이 있으신가요?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="signUp"><a th:href="@{/members/login}">로그인 하러가기</a></span>
                 </p>
@@ -56,6 +55,30 @@
 </main>
 
 <script>
+
+$(document).ready(function() {
+  $("#password").keyup(checkPasswordMatch);
+  $("#passwordcheck").keyup(checkPasswordMatch);
+});
+    function checkPasswordMatch() {
+      var password = $("#password").val();
+      var passwordCheck = $("#passwordcheck").val();
+
+    if (password === "" && passwordCheck === "") {
+      $("#passwordMatchLabel").text("비밀번호를 입력해주세요.").css("color", "red");
+      $("#signInButton").prop("disabled", true);
+      return false;
+    } else if (password !== passwordCheck) {
+      $("#passwordMatchLabel").text("비밀번호가 일치하지 않습니다.").css("color", "red");
+      $("#signInButton").prop("disabled", true);
+      return false;
+    } else {
+      $("#passwordMatchLabel").text("비밀번호가 일치합니다.").css("color", "green");
+      $("#signInButton").prop("disabled", false);
+      return true;
+    }
+}
+
 $('.submitButton').click(function(event) {
    event.stopPropagation(); //기본내장된기능을 취소한다.
    var $clickElement = $(this);
@@ -69,7 +92,6 @@ $('.submitButton').click(function(event) {
         obj[this.name] = this.value;
         });
         };
-    alert("dddd");
    $.ajax({
        url: "/members/new",
        type: "POST",
@@ -84,13 +106,10 @@ $('.submitButton').click(function(event) {
                alert(response.message);
                location.href = '/members/login';
                }
-<!--               location.href = '/login';-->
        },
        error: function(xhr, status, error) {
            console.error('Failed to save member:', error);
        }
-
-
    });
 });
 </script>
